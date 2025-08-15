@@ -11,6 +11,7 @@ from sqlglot.dialects.dialect import (
     build_date_delta,
     date_delta_to_binary_interval_op,
     groupconcat_sql,
+    tochar_remove_fm,
 )
 from sqlglot.dialects.hive import _build_with_ignore_nulls
 from sqlglot.dialects.spark2 import Spark2, temporary_storage_provider, _build_as_cast
@@ -213,6 +214,7 @@ class Spark(Spark2):
             exp.TryCast: lambda self, e: (
                 self.trycast_sql(e) if e.args.get("safe") else self.cast_sql(e)
             ),
+            exp.ToChar: lambda self, e: self.sql(tochar_remove_fm(e, self)),
         }
         TRANSFORMS.pop(exp.AnyValue)
         TRANSFORMS.pop(exp.DateDiff)

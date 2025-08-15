@@ -10,6 +10,7 @@ from sqlglot.dialects.dialect import (
     timestamptrunc_sql,
     build_formatted_time,
     groupconcat_sql,
+    tochar_remove_fm,
 )
 from sqlglot.dialects.spark import Spark
 from sqlglot.tokens import TokenType
@@ -99,7 +100,7 @@ class Databricks(Spark):
             exp.JSONExtract: _jsonextract_sql,
             exp.JSONExtractScalar: _jsonextract_sql,
             exp.JSONPathRoot: lambda *_: "",
-            exp.ToChar: lambda self, e: self.function_fallback_sql(e),
+            exp.ToChar: lambda self, e: self.sql(tochar_remove_fm(e, self)),
         }
 
         TRANSFORMS.pop(exp.TryCast)

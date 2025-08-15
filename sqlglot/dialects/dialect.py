@@ -2020,6 +2020,27 @@ def build_timetostr_or_tochar(args: t.List, dialect: Dialect) -> exp.TimeToStr |
     return exp.ToChar.from_arg_list(args)
 
 
+def tochar_remove_fm(to_char_expr: exp.ToChar, dialect: Dialect) -> exp.Expression:
+    """
+    Remove the Oracle 'FM' prefix from the TO_CHAR format string.
+    Should be called from dialects that don't support 'FM'.
+    """
+    from sqlglot.optimizer.annotate_types import annotate_types
+
+    this = to_char_expr.this
+    format_ = to_char_expr.args.get("format")
+
+    if not this.type:
+        annotate_types(this, dialect=dialect)
+
+    if isinstance(format_, exp.Literal) and format_.this.upper().startswith("FM"):
+        stripped_format = format_.this[2:]  # Remove 'FM'
+        new_format = exp.Literal.string(stripped_format)
+        return exp.Trim(this=exp.ToChar(this=this.copy(), format=new_format))
+
+    return to_char_expr
+
+
 def build_replace_with_optional_replacement(args: t.List) -> exp.Replace:
     return exp.Replace(
         this=seq_get(args, 0),
